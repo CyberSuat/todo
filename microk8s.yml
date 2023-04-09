@@ -1,0 +1,54 @@
+- name: Install Microk8s
+  hosts: node2
+  gather_facts: false
+  become: true
+  tasks:
+  # https://microk8s.io/docs/getting-started
+    - name: Install docker
+      apt:
+        name: docker.io
+        update_cache: true
+        state: present
+    - name: Install microk8s
+      snap:
+        name: microk8s
+        state: present
+        classic: yes
+
+    # - name: Install addons
+    #   shell: |
+    #     microk8s enable dns 
+    #     microk8s enable hostpath-storage
+  
+    - name: create .kube
+      shell: |
+        cd /home/ubuntu
+        mkdir .kube
+        cd .kube
+        microk8s config > config
+        # sudo usermod -a -G microk8s ubuntu
+        # sudo chown -R ubuntu ~/.kube
+
+    - name: Add user to Docker and Microk8s groups, 
+      user:
+        name: ubuntu
+        state: present
+        groups:
+          - docker
+          - microk8s
+        append: true
+        
+    - name: Add alias to kubectl
+      become: false
+      lineinfile:
+        path: '/home/ubuntu/.bashrc'
+        regexp: '^alias kubectl='
+        line: 'alias kubectl="microk8s kubectl"'
+
+    - name: Install jdk for java source code
+      apt:
+        name: default-jdk
+        state: present
+       
+    # - name: create .kube
+    #   shell: newgrp microk8s

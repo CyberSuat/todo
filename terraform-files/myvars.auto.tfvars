@@ -1,6 +1,11 @@
-myami = ["ami-0b0dcb5067f052a63", "ami-007855ac798b5175e", "ami-007855ac798b5175e"]
-mykey = "SuaT"
-tags = ["Config-Server", "CI/CD-Server", "Ks8-Server"]
-instancetype = "t2.micro"
-num = 3
-region = "us-east-1"
+//aws_access_key = ""
+//aws_secret_key = ""
+myami           = "ami-06e46074ae430fba6"
+k8sami          = "ami-0aa2b7722dc1b5612"
+mykey           = "SuaT" # change keypem
+tags            = ["Control_Node", "Jenkins-Server"]
+k8stags         = "microk8s"
+instancetype    = "t2.micro"
+k8sinstancetype = "t2.medium"
+num             = 2
+region          = "us-east-1"

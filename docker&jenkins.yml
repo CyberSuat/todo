@@ -1,0 +1,76 @@
+- name: installation Docker and Jenkins
+  hosts: node1 #install docker and jenkins for node1
+  become: true
+  tasks:
+  # Install Docker  
+    - name: install yum utils
+      package:
+        name: yum-utils
+        state: present
+
+    - name: Add repository into repo.d list
+      ansible.builtin.yum_repository:
+        name: docker_repo
+        description: docker repository
+        baseurl: "https://download.docker.com/linux/centos/8/x86_64/stable"
+        enabled: true
+        gpgcheck: no
+
+    - name: install Docker
+      package:
+        name: docker-ce
+        state: present
+    
+    - name: Ensure group "docker" exists
+      ansible.builtin.group:
+        name: docker
+        state: present
+
+    - name: Adding ec2 user to docker group
+      user:
+        name: ec2-user
+        groups: docker
+        append: yes
+
+    - name: Start Docker
+      ansible.builtin.service:
+        name: "docker"
+        enabled: true
+        state: started
+    
+# Install Jenkins (https://www.jenkins.io/doc/tutorials/tutorial-for-installing-jenkins-on-AWS/)
+
+    - name: Get Jenkins REPO URL
+      ansible.builtin.get_url:
+        url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+        dest: /etc/yum.repos.d/jenkins.repo
+    
+    - name: Import a key from a url
+      ansible.builtin.rpm_key:
+        state: present
+        key: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+    
+    - name: install Java
+      package:
+        name: java-11-amazon-corretto
+        state: present
+
+    - name: Install Jenkins
+      ansible.builtin.dnf:
+        name: jenkins
+        state: present
+
+    - name: Start Jenkins
+      ansible.builtin.service:
+        name: "jenkins"
+        enabled: true
+        state: started
+
+    - name: init password jenkins
+      shell: cat /var/lib/jenkins/secrets/initialAdminPassword
+      changed_when: false
+      register: result
+
+    - name: print init password jenkins
+      debug:
+       var: result.stdout
